@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  rssservice:
+    image: rssservice
+    build:
+      context: ./RSSService
+      dockerfile: Dockerfile
