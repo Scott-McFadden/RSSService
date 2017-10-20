@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RSSData.data;
+using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace RSSService
 {
@@ -21,7 +24,19 @@ namespace RSSService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddDbContextPool<RssContext>(options =>
+               options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddMvc()
+                .AddXmlSerializerFormatters();
+
+
+            services.AddSwaggerGen(
+                c =>
+                {
+                    c.SwaggerDoc("v1", new Info { Title = "RSS Service", Version = "v1" });
+                    
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,6 +53,12 @@ namespace RSSService
             }
 
             app.UseStaticFiles();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "RSS Service V1");
+                c.ShowRequestHeaders();
+            });
 
             app.UseMvc(routes =>
             {
